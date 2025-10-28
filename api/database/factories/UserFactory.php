@@ -33,6 +33,8 @@ class UserFactory extends Factory
             'role' => fake()->randomElement(['owner', 'admin', 'family', 'viewer']),
             'otp_secret' => null,
             'otp_verified_at' => null,
+            'otp_expires_at' => null,
+            'otp_attempts' => 0,
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
