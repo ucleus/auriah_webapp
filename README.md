@@ -27,10 +27,3 @@ npm run dev
 
 Use the email `fiv4lab@gmail.com` with the demo OTP `123456` to sign in. Once authenticated you can browse summary widgets, mock task data, and the seeded user list representing the role-based access model from the build spec.
 
-## Next steps
-
-- Provision a Laravel + MySQL API under `api/` (see `build_instruction.md`) to back the OTP workflow, search endpoint, and CRUD operations.
-- Replace the static data modules with real API calls once the backend is available.
-- Configure `.env` files for both React apps (`VITE_API_BASE_URL`) targeting the Laravel server.
-
-Refer to `build_instruction.md` for the complete feature roadmap, acceptance criteria, and deployment tips.
