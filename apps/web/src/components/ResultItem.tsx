@@ -1,16 +1,16 @@
 import { ExternalLink, Link2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import type { SearchResult } from "../data/searchData";
+import type { SearchResult } from "../api/search";
 
 export function ResultItem({ result }: { result: SearchResult }) {
-  const isInternal = result.href.startsWith("/");
+  const isInternal = result.url.startsWith("/");
   const Icon = isInternal ? Link2 : ExternalLink;
 
   const content = isInternal ? (
-    <Link to={result.href}>{result.title}</Link>
+    <Link to={result.url}>{result.title}</Link>
   ) : (
-    <a href={result.href} target="_blank" rel="noopener noreferrer">
+    <a href={result.url} target="_blank" rel="noopener noreferrer">
       {result.title}
     </a>
   );

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -25,8 +26,10 @@ class DatabaseSeeder extends Seeder
                 'role' => 'owner',
                 'phone_number' => '+15555550100',
                 'email_verified_at' => now(),
-                'otp_secret' => null,
-                'otp_verified_at' => now(),
+                'otp_secret' => Hash::make('123456'),
+                'otp_expires_at' => now()->addMinutes(10),
+                'otp_verified_at' => null,
+                'otp_attempts' => 0,
             ],
         );
 
@@ -49,6 +52,10 @@ class DatabaseSeeder extends Seeder
                 if (random_int(0, 100) > 65) {
                     $task->assignee()->associate($familyUsers->random());
                     $task->save();
+                }
+
+                if ($task->labels === null || $task->labels === []) {
+                    $task->update(['labels' => [Str::title($task->status)]]);
                 }
             });
     }

@@ -3,8 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppWindow, Mic, Search as SearchIcon } from "lucide-react";
 
-import { LOCAL_SUGGESTIONS } from "../data/suggestions";
-import { INSPIRATION_PROMPTS } from "../data/inspirations";
+import { fetchInspirationPrompts, fetchSearchSuggestions } from "../api/search";
 
 const ICON_SIZE = 18;
 
@@ -27,6 +26,7 @@ export function SearchBar({ initialQuery = "", showActions = true }: SearchBarPr
   const [query, setQuery] = useState(initialQuery);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
+  const [inspirations, setInspirations] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const [listening, setListening] = useState(false);
@@ -36,6 +36,21 @@ export function SearchBar({ initialQuery = "", showActions = true }: SearchBarPr
   useEffect(() => {
     setQuery(initialQuery);
   }, [initialQuery]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchInspirationPrompts(controller.signal)
+      .then((items) => {
+        if (items.length > 0) {
+          setInspirations(items);
+        }
+      })
+      .catch(() => {
+        // Swallow errors; fallback inspiration will be used.
+      });
+
+    return () => controller.abort();
+  }, []);
 
   const performSearch = useCallback(
     (value: string) => {
@@ -91,31 +106,47 @@ export function SearchBar({ initialQuery = "", showActions = true }: SearchBarPr
     [performSearch, query]
   );
 
-  const inspiration = useMemo(
-    () => INSPIRATION_PROMPTS[Math.floor(Math.random() * INSPIRATION_PROMPTS.length)],
-    [query]
-  );
+  const inspiration = useMemo(() => {
+    if (inspirations.length === 0) {
+      return "discover new ideas";
+    }
+    return inspirations[Math.floor(Math.random() * inspirations.length)];
+  }, [inspirations]);
 
   const handleLucky = useCallback(() => {
     performSearch(inspiration);
     setQuery(inspiration);
   }, [inspiration, performSearch]);
 
-  const updateSuggestions = useCallback((value: string) => {
-    const needle = value.toLowerCase().trim();
-    if (!needle) {
+  useEffect(() => {
+    const controller = new AbortController();
+    const trimmed = query.trim();
+
+    if (!trimmed) {
       setSuggestions([]);
       setOpen(false);
-      return;
+      return () => controller.abort();
     }
-    const matches = LOCAL_SUGGESTIONS.filter((hint) => hint.toLowerCase().includes(needle)).slice(0, 6);
-    setSuggestions(matches);
-    setOpen(matches.length > 0);
-  }, []);
 
-  useEffect(() => {
-    updateSuggestions(query);
-  }, [query, updateSuggestions]);
+    const timeout = window.setTimeout(async () => {
+      try {
+        const next = await fetchSearchSuggestions(trimmed, controller.signal);
+        setSuggestions(next);
+        setOpen(next.length > 0);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setSuggestions([]);
+          setOpen(false);
+          console.warn("Failed to load suggestions", error);
+        }
+      }
+    }, 200);
+
+    return () => {
+      controller.abort();
+      window.clearTimeout(timeout);
+    };
+  }, [query]);
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -151,52 +182,54 @@ export function SearchBar({ initialQuery = "", showActions = true }: SearchBarPr
     recognition.start();
   }, [listening]);
 
+  const showSuggestions = open && suggestions.length > 0;
+
   return (
     <div className="search-stack">
       <div className="search" role="search">
         <form className="search-form" onSubmit={handleSubmit} autoComplete="off">
-        <button
-          className="icon-btn"
-          type="button"
-          title="Apps"
-          aria-label="Apps"
-          onClick={() => navigate("/tasks")}
-        >
-          <AppWindow size={ICON_SIZE} />
-        </button>
-        <input
-          ref={inputRef}
-          id="q"
-          name="q"
-          type="search"
-          placeholder="Search the web or press '/' to focus"
-          aria-label="Search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          onFocus={() => updateSuggestions(query)}
-        />
-        <button
-          className="icon-btn"
-          type="button"
-          title={speechSupported ? "Voice search" : "Voice search not supported"}
-          aria-label="Voice search"
-          onClick={onMicClick}
-          disabled={!speechSupported}
-          style={listening ? { background: "#2ecc7040" } : undefined}
-        >
-          <Mic size={ICON_SIZE} />
-        </button>
-        <button className="icon-btn" type="submit" title="Search" aria-label="Search">
-          <SearchIcon size={ICON_SIZE} />
-        </button>
+          <button
+            className="icon-btn"
+            type="button"
+            title="Apps"
+            aria-label="Apps"
+            onClick={() => navigate("/tasks")}
+          >
+            <AppWindow size={ICON_SIZE} />
+          </button>
+          <input
+            ref={inputRef}
+            id="q"
+            name="q"
+            type="search"
+            placeholder="Search the web or press '/' to focus"
+            aria-label="Search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onFocus={() => setOpen(suggestions.length > 0)}
+          />
+          <button
+            className="icon-btn"
+            type="button"
+            title={speechSupported ? "Voice search" : "Voice search not supported"}
+            aria-label="Voice search"
+            onClick={onMicClick}
+            disabled={!speechSupported}
+            style={listening ? { background: "#2ecc7040" } : undefined}
+          >
+            <Mic size={ICON_SIZE} />
+          </button>
+          <button className="icon-btn" type="submit" title="Search" aria-label="Search">
+            <SearchIcon size={ICON_SIZE} />
+          </button>
         </form>
         <div
           ref={suggestionsRef}
-          className={`suggestions${open ? " active" : ""}`}
+          className={`suggestions${showSuggestions ? " active" : ""}`}
           aria-live="polite"
           role="listbox"
         >
-          {open && (
+          {showSuggestions && (
             <ul>
               {suggestions.map((item) => (
                 <li
