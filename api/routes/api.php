@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\AuthenticatedUserController;
 use App\Http\Controllers\Api\Auth\OtpController;
+use App\Http\Controllers\Api\PublicTaskController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\UserController;
@@ -20,6 +21,7 @@ Route::prefix('auth')->group(function () {
 Route::get('search', [SearchController::class, 'index']);
 Route::get('search/suggestions', [SearchController::class, 'suggestions']);
 Route::get('search/inspirations', [SearchController::class, 'inspirations']);
+Route::get('public/tasks', [PublicTaskController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('tasks', TaskController::class)->except(['create', 'edit']);

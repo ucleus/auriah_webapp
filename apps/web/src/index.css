@@ -399,6 +399,243 @@ footer a:hover {
   color: var(--link);
 }
 
+.task-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.task-inline-message {
+  width: 100%;
+  background: #ffffff0b;
+  border: 1px solid #ffffff16;
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: var(--muted);
+}
+
+.task-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #3b1618;
+  border: 1px solid #ff6b6b55;
+  color: #ffb4b4;
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+.task-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.task-card {
+  border: 1px solid #ffffff14;
+  border-radius: 16px;
+  background: #ffffff08;
+  padding: 18px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  color: inherit;
+  transition: transform 0.15s ease, border 0.15s ease, box-shadow 0.15s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--link);
+}
+
+.task-card--overdue {
+  border-color: #ff6b6b;
+  box-shadow: 0 0 0 1px #ff6b6b30;
+  background: #2a1216;
+}
+
+.task-card--completed {
+  border-color: #2cb67d;
+  background: #142c1b;
+}
+
+.task-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.task-card__header h3 {
+  margin: 4px 0 0;
+  font-size: 18px;
+}
+
+.task-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+
+.task-value {
+  margin: 0;
+  font-weight: 600;
+}
+
+.task-value.with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-card__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.task-status-pill {
+  border: 1px solid #ffffff1a;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-warning,
+.task-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  width: fit-content;
+}
+
+.task-warning {
+  background: #3b1618;
+  color: #ff8a8a;
+}
+
+.task-success {
+  background: #1c3226;
+  color: #56f6a0;
+}
+
+.task-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+
+.task-modal {
+  position: relative;
+  background: var(--card);
+  border: 1px solid #ffffff1f;
+  border-radius: 20px;
+  padding: 28px;
+  width: min(92vw, 560px);
+  max-width: 560px;
+}
+
+.task-modal h2 {
+  margin: 0 0 8px;
+}
+
+.task-modal-subtitle {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+
+.task-modal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.task-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.task-labels span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #ffffff16;
+  background: #ffffff0e;
+  font-size: 12px;
+}
+
+.task-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.task-modal-actions button {
+  flex: 1 1 45%;
+  border-radius: 8px;
+  border: 1px solid #ffffff1c;
+  padding: 10px 16px;
+  background: #ffffff08;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.task-modal-actions button:hover {
+  background: #ffffff12;
+}
+
+.task-modal-actions button:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.task-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 6px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.task-modal-close:hover {
+  background: #ffffff14;
+  color: var(--text);
+}
+
+.task-modal-close:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.task-priority {
+  text-transform: capitalize;
+}
+
 @media (max-width: 768px) {
   header {
     flex-direction: column;
@@ -424,6 +661,16 @@ footer a:hover {
   .btn {
     width: 100%;
     text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .task-modal {
+    padding: 20px;
+  }
+
+  .task-modal-actions button {
+    flex: 1 1 100%;
   }
 }
 
