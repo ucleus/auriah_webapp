@@ -239,9 +239,7 @@ export function Tasks() {
                   ]
                     .filter(Boolean)
                     .join(" ")}
-                  onClick={() =>
-                    setSelectedTaskId((current) => (current === task.id ? null : task.id))
-                  }
+                  onClick={() => setSelectedTaskId((current) => (current === task.id ? null : task.id))}
                   aria-pressed={selectedTaskId === task.id}
                   role="listitem"
                 >
