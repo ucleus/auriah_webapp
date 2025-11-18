@@ -532,6 +532,23 @@ footer a:hover {
   color: #56f6a0;
 }
 
+.task-raw {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.task-raw__pre {
+  margin: 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: #0b0d12;
+  border: 1px solid #ffffff18;
+  font-size: 12px;
+  max-height: 320px;
+  overflow: auto;
+  line-height: 1.4;
+}
+
 .task-modal-overlay {
   position: fixed;
   inset: 0;

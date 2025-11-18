@@ -37,6 +37,54 @@ type DecoratedTask = Task & {
 const dueDateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 const updatedFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
 
+const demoUser = {
+  id: 0,
+  name: "Sean (Demo)",
+  email: "demo@auirah.app",
+  role: "owner" as const,
+  phone_number: null,
+  status: "active" as const,
+  email_verified_at: new Date().toISOString(),
+  otp_verified_at: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
+const FALLBACK_TASKS: Task[] = [
+  {
+    id: 101,
+    title: "Demo — Weekly planning sync",
+    slug: "demo-weekly-planning-sync",
+    description: "Walk through next actions and confirm blockers for every squad.",
+    status: "in_progress",
+    priority: "high",
+    due_date: new Date(Date.now() + 86400000).toISOString().slice(0, 10),
+    completed_at: null,
+    labels: ["Demo", "Planning"],
+    summary: "Weekly sync to review squad actions.",
+    owner: demoUser,
+    assignee: demoUser,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 102,
+    title: "Demo — Refresh groceries list",
+    slug: "demo-refresh-groceries-list",
+    description: "Restock essentials before the weekend guests arrive.",
+    status: "todo",
+    priority: "medium",
+    due_date: null,
+    completed_at: null,
+    labels: ["Demo", "Home"],
+    summary: "Restock essentials for the weekend.",
+    owner: demoUser,
+    assignee: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
+
 export function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
@@ -90,12 +138,21 @@ export function Tasks() {
         setError(null);
         const response = await fetchPublicTasks(signal);
         if (signal?.aborted) return;
-        setTasks(Array.isArray(response?.data) ? response.data : []);
+        const payload = Array.isArray(response?.data) ? response.data : [];
+        if (payload.length === 0) {
+          setTasks(FALLBACK_TASKS);
+          setError("Connected to Auirah API but no records were returned. Showing demo data.");
+        } else {
+          setError(null);
+          setTasks(payload);
+        }
       } catch (err) {
         if ((err as Error).name === "AbortError" || signal?.aborted) {
           return;
         }
-        setError((err as Error).message);
+        const message = (err as Error).message || "Unable to fetch tasks.";
+        setError(`${message} Showing demo data instead.`);
+        setTasks(FALLBACK_TASKS);
       } finally {
         if (!signal?.aborted) {
           setLoading(false);
@@ -282,6 +339,13 @@ export function Tasks() {
             })}
           </div>
         )}
+
+        <div className="task-raw">
+          <p className="task-label" style={{ marginBottom: "6px" }}>
+            Raw task data
+          </p>
+          <pre className="task-raw__pre">{JSON.stringify(tasks, null, 2)}</pre>
+        </div>
       </PageLayout>
 
       {selectedTask && (
