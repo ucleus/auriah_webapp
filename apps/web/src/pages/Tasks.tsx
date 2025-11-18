@@ -46,7 +46,7 @@ export function Tasks() {
   const actionTimeout = useRef<number | null>(null);
   const primaryActionRef = useRef<HTMLButtonElement | null>(null);
 
-  const decorateTasks = useCallback((taskList: Task[]): DecoratedTask[] => {
+  const decorateTasks = useCallback((taskList: Task[] = []): DecoratedTask[] => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -90,7 +90,7 @@ export function Tasks() {
         setError(null);
         const response = await fetchPublicTasks(signal);
         if (signal?.aborted) return;
-        setTasks(response.data);
+        setTasks(Array.isArray(response?.data) ? response.data : []);
       } catch (err) {
         if ((err as Error).name === "AbortError" || signal?.aborted) {
           return;
