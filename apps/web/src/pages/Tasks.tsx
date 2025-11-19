@@ -3,7 +3,7 @@ import {
   AlertCircle,
   CalendarDays,
   CheckCircle2,
-  PlusCircle,
+
   RefreshCw,
   UserRound,
   X,
@@ -36,6 +36,7 @@ type DecoratedTask = Task & {
 
 const dueDateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 const updatedFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
+const PAGE_SIZE = 8;
 
 export function Tasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -43,6 +44,7 @@ export function Tasks() {
   const [error, setError] = useState<string | null>(null);
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const actionTimeout = useRef<number | null>(null);
   const primaryActionRef = useRef<HTMLButtonElement | null>(null);
 
@@ -96,6 +98,7 @@ export function Tasks() {
             ? response.data
             : [];
         setTasks(payload);
+        setPage(1);
         setError(null);
       } catch (err) {
         if ((err as Error).name === "AbortError" || signal?.aborted) {
@@ -104,6 +107,7 @@ export function Tasks() {
         const message = (err as Error).message || "Unable to fetch tasks.";
         setError(message);
         setTasks([]);
+        setPage(1);
       } finally {
         if (!signal?.aborted) {
           setLoading(false);
@@ -120,10 +124,22 @@ export function Tasks() {
   }, [fetchData]);
 
   const decoratedTasks = useMemo(() => decorateTasks(tasks), [decorateTasks, tasks]);
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(decoratedTasks.length / PAGE_SIZE)), [decoratedTasks.length]);
+  const paginatedTasks = useMemo(
+    () => decoratedTasks.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [decoratedTasks, page]
+  );
   const selectedTask = useMemo(
     () => decoratedTasks.find((task) => task.id === selectedTaskId) ?? null,
     [decoratedTasks, selectedTaskId]
   );
+
+  useEffect(() => {
+    setPage((current) => {
+      const safePage = Math.max(1, Math.min(current, totalPages));
+      return safePage;
+    });
+  }, [totalPages]);
 
   useEffect(() => {
     if (!selectedTask) {
@@ -167,34 +183,15 @@ export function Tasks() {
   };
 
   const handleRefresh = () => fetchData();
-  const handleCreateClick = () => {
-    if (actionTimeout.current !== null) {
-      window.clearTimeout(actionTimeout.current);
-    }
-    setActionMessage("Task creation lives in the admin console. Coming soon to this page!");
-    actionTimeout.current = window.setTimeout(() => {
-      setActionMessage(null);
-    }, 3500);
-  };
+
 
   return (
     <>
-      <PageLayout title="Tasks" description="Plan projects, routines, and quick reminders in one place.">
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <CheckCircle2 size={20} />
-          <div>
-            <strong>Live task tracker</strong>
-            <p style={{ margin: 0, color: "var(--muted)" }}>
-              Pulls directly from the shared workspace database.
-            </p>
-          </div>
-        </div>
+      <PageLayout title="Tasks" description="Plan projects, routines, and quick reminders in one place." fullWidth transparent>
+
 
         <div className="task-controls">
-          <button className="btn" type="button" onClick={handleCreateClick}>
-            <PlusCircle size={16} style={{ marginRight: "8px" }} />
-            Add new task
-          </button>
+
           <button className="btn" type="button" onClick={handleRefresh} disabled={loading}>
             <RefreshCw size={16} style={{ marginRight: "8px" }} />
             Refresh
@@ -224,9 +221,9 @@ export function Tasks() {
           <p style={{ color: "var(--muted)" }}>No tasks yet. Add one from the admin dashboard.</p>
         )}
 
-        {decoratedTasks.length > 0 && (
+        {paginatedTasks.length > 0 && (
           <div className="task-grid" role="list">
-            {decoratedTasks.map((task) => {
+            {paginatedTasks.map((task) => {
               const statusColor = STATUS_COLOR[task.status];
               return (
                 <button
@@ -289,12 +286,21 @@ export function Tasks() {
           </div>
         )}
 
-        <div className="task-raw">
-          <p className="task-label" style={{ marginBottom: "6px" }}>
-            Raw task data
-          </p>
-          <pre className="task-raw__pre">{JSON.stringify(tasks, null, 2)}</pre>
-        </div>
+        {totalPages > 1 && (
+          <div className="task-pagination">
+            <button type="button" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+              Previous
+            </button>
+            <span>
+              Page {page} of {totalPages}
+            </span>
+            <button type="button" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+              Next
+            </button>
+          </div>
+        )}
+
+
       </PageLayout>
 
       {selectedTask && (

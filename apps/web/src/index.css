@@ -47,9 +47,12 @@ body {
 }
 
 main {
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 40px 20px;
+  width: 100%;
+  max-width: 100%;
 }
 
 header,
@@ -428,7 +431,7 @@ footer a:hover {
 
 .task-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   width: 100%;
 }
@@ -653,6 +656,34 @@ footer a:hover {
   text-transform: capitalize;
 }
 
+.task-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.task-pagination button {
+  border-radius: 8px;
+  border: 1px solid #ffffff1c;
+  padding: 8px 14px;
+  background: #ffffff08;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.task-pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+  .task-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   header {
     flex-direction: column;
@@ -679,6 +710,10 @@ footer a:hover {
     width: 100%;
     text-align: center;
   }
+
+  .task-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 600px) {
@@ -688,6 +723,10 @@ footer a:hover {
 
   .task-modal-actions button {
     flex: 1 1 100%;
+  }
+
+  .task-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
   }
 }
 

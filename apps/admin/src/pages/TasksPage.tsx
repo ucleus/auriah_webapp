@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
+import { useDisclosure, useToast } from "@chakra-ui/react";
 import {
   Badge,
   Button,
   HStack,
   Heading,
   Icon,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Spinner,
   Table,
   TableContainer,
@@ -15,9 +21,10 @@ import {
   Tr,
   Text,
 } from "@chakra-ui/react";
-import { Plus } from "lucide-react";
+import { MoreHorizontal, Plus, Trash2, Pencil } from "lucide-react";
 
 import { apiFetch } from "../api/client";
+import { TaskModal } from "../components/TaskModal";
 import { useAuth } from "../context/AuthContext";
 import type { PaginatedResponse, Task, TaskStatus } from "../types";
 
@@ -43,33 +50,70 @@ export function TasksPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!token) return;
-    const authToken = token;
-    const controller = new AbortController();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const toast = useToast();
 
-    async function load() {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await apiFetch<PaginatedResponse<Task>>("/tasks?per_page=50", {
-          token: authToken,
-          signal: controller.signal,
-        });
-        setTasks(response.data);
-      } catch (err) {
-        if (!controller.signal.aborted) {
-          setError((err as Error).message);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
+  const handleCreate = () => {
+    setEditingTask(null);
+    onOpen();
+  };
+
+  const handleEdit = (task: Task) => {
+    setEditingTask(task);
+    onOpen();
+  };
+
+  const handleDelete = async (taskId: number) => {
+    if (!token || !window.confirm("Are you sure you want to delete this task?")) return;
+
+    try {
+      await apiFetch(`/tasks/${taskId}`, {
+        method: "DELETE",
+        token,
+      });
+      toast({
+        title: "Task deleted.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+      fetchTasks();
+    } catch (err) {
+      toast({
+        title: "Failed to delete task.",
+        description: (err as Error).message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const fetchTasks = async (signal?: AbortSignal) => {
+    if (!token) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiFetch<PaginatedResponse<Task>>("/tasks?per_page=50", {
+        token,
+        signal,
+      });
+      setTasks(response.data);
+    } catch (err) {
+      if (!signal?.aborted) {
+        setError((err as Error).message);
+      }
+    } finally {
+      if (!signal?.aborted) {
+        setLoading(false);
       }
     }
+  };
 
-    load();
-
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchTasks(controller.signal);
     return () => controller.abort();
   }, [token]);
 
@@ -79,7 +123,7 @@ export function TasksPage() {
     <TableContainer bg="gray.800" borderRadius="md" p={6}>
       <HStack justify="space-between" mb={4}>
         <Heading size="md">Tasks</Heading>
-        <Button leftIcon={<Icon as={Plus} />} colorScheme="blue" variant="outline">
+        <Button leftIcon={<Icon as={Plus} />} colorScheme="blue" variant="outline" onClick={handleCreate}>
           New task
         </Button>
       </HStack>
@@ -104,6 +148,7 @@ export function TasksPage() {
               <Th>Assignee</Th>
               <Th>Status</Th>
               <Th>Due</Th>
+              <Th width="50px"></Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -115,11 +160,36 @@ export function TasksPage() {
                   <Badge colorScheme={STATUS_COLOR[task.status]}>{STATUS_LABEL[task.status]}</Badge>
                 </Td>
                 <Td>{task.due_date ? formatDate.format(new Date(task.due_date)) : "—"}</Td>
+                <Td>
+                  <Menu>
+                    <MenuButton
+                      as={IconButton}
+                      icon={<MoreHorizontal size={16} />}
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Actions"
+                    />
+                    <MenuList bg="gray.700" borderColor="gray.600">
+                      <MenuItem icon={<Pencil size={14} />} onClick={() => handleEdit(task)} bg="transparent" _hover={{ bg: "gray.600" }}>
+                        Edit
+                      </MenuItem>
+                      <MenuItem icon={<Trash2 size={14} />} onClick={() => handleDelete(task.id)} color="red.300" bg="transparent" _hover={{ bg: "gray.600" }}>
+                        Delete
+                      </MenuItem>
+                    </MenuList>
+                  </Menu>
+                </Td>
               </Tr>
             ))}
           </Tbody>
         </Table>
       )}
+      <TaskModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onSuccess={() => fetchTasks()}
+        initialData={editingTask}
+      />
     </TableContainer>
   );
 }

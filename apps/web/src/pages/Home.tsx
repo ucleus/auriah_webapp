@@ -20,7 +20,7 @@ export function Home() {
   }, []);
 
   return (
-    <div className="wrap">
+    <div className="wrap" style={{ margin: "auto" }}>
       <Logo />
       <div className="greeting" aria-live="polite">
         {greeting}
