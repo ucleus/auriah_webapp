@@ -6,6 +6,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 import { TasksPage } from "./pages/TasksPage";
 import { UsersPage } from "./pages/UsersPage";
+import { MediaPage } from "./pages/MediaPage";
 
 function Protected() {
   const { user } = useAuth();
@@ -42,6 +43,7 @@ export function AppRouter() {
                 { index: true, element: <DashboardPage /> },
                 { path: "tasks", element: <TasksPage /> },
                 { path: "users", element: <UsersPage /> },
+                { path: "media", element: <MediaPage /> },
               ],
             },
           ],

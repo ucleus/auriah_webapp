@@ -19,7 +19,7 @@ const quickLinks: QuickLink[] = [
   { to: "/tasks", label: "Tasks", icon: <CheckSquare size={16} /> },
   { to: "/notes", label: "Notes", icon: <StickyNote size={16} /> },
   { to: "/music", label: "Music", icon: <Music4 size={16} /> },
-  { to: "/photos", label: "Photos", icon: <Camera size={16} /> },
+  { to: "/media", label: "Media", icon: <Camera size={16} /> },
   { to: "/learn", label: "Learn", icon: <BookOpenCheck size={16} /> },
   { to: "/maps", label: "Maps", icon: <MapPinned size={16} /> },
 ];

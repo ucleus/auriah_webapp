@@ -9,7 +9,7 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { LogOut, Menu, ShieldCheck, Users } from "lucide-react";
+import { LogOut, Menu, ShieldCheck, Users, Image } from "lucide-react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
@@ -17,7 +17,9 @@ import { useAuth } from "../context/AuthContext";
 const navLinks = [
   { to: "/", label: "Overview", icon: ShieldCheck },
   { to: "/tasks", label: "Tasks", icon: Menu },
+
   { to: "/users", label: "Users", icon: Users },
+  { to: "/media", label: "Media", icon: Image },
 ];
 
 export function DashboardLayout() {
